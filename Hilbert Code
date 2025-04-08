@@ -1,0 +1,42 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.signal import hilbert
+
+# 1. Load your data
+df = pd.read_csv('/hh1v2-1trend.csv')
+
+# 2. Extract signal and time
+y = df['Y'].values                    # Main signal
+dx = df['dx'].iloc[0]                # Sampling interval (assumed constant)
+t = np.arange(len(y)) * dx           # Time vector
+
+# 3. Hilbert Transform
+analytic_signal = hilbert(y)
+amplitude_envelope = np.abs(analytic_signal)
+instantaneous_phase = np.unwrap(np.angle(analytic_signal))
+instantaneous_frequency = np.diff(instantaneous_phase) / (2.0 * np.pi * dx)
+t_freq = t[1:]  # One less point due to np.diff
+
+# 4. Plot results
+plt.figure(figsize=(12, 6))
+
+# Amplitude Envelope
+plt.subplot(2, 1, 1)
+plt.plot(t, y, label='Original Signal', alpha=0.5)
+plt.plot(t, amplitude_envelope, label='Amplitude Envelope', color='red')
+plt.title('Amplitude Envelope')
+plt.xlabel('Time')
+plt.ylabel('Amplitude')
+plt.legend()
+
+# Instantaneous Frequency
+plt.subplot(2, 1, 2)
+plt.plot(t_freq, instantaneous_frequency, label='Instantaneous Frequency', color='green')
+plt.title('Instantaneous Frequency')
+plt.xlabel('Time')
+plt.ylabel('Frequency (Hz)')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
